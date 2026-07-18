@@ -30,6 +30,7 @@ async function writeJsonToOpfs(fileName, jsonObject) {
     const jsonString = JSON.stringify(jsonObject, null, 2);
     await writable.write(jsonString);
     await writable.close();
+    showQuota()
     console.log(`${fileName} written successfully.`);
 }
 async function readJsonFromOpfs(fileName) {
@@ -167,7 +168,10 @@ button_setup_Continue.addEventListener("click", () => {
 async function purgeCache() {
     const root = await navigator.storage.getDirectory();
     const fileHandle = await root.getFileHandle("meta.json", { create: true });
-    const fileSz = Math.round((await fileHandle.getFile()).size / (1e+6))
+    const fileHandle2 = await root.getFileHandle("library.json", { create: true });
+    const fileSz = Math.round((await fileHandle.getFile()).size / (1e+6)) + Math.round((await fileHandle2.getFile()).size / (1e+6))
     await writeJsonToOpfs("meta.json", {})
+    await writeJsonToOpfs("library.json", {})
     alert(`Cleared ${fileSz}MB`)
+    showQuota()
 }
