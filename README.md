@@ -1,0 +1,2 @@
+# Crowdplayer
+(the hackatime project is called crowdplayer2 becasue i already had one called crowdplayer but when i looked at the existing source it looked like i had vibecoded it (it had typescript, i never write typescript), but no hours showed up in hackatime as AI Coding so to be safe i am making it again)

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crowdplayer</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+    <div class="hero bg-base-200 min-h-screen">
+        <div class="hero-content text-center max-w-lg">
+            <div class="max-w-lg justify-center">
+                <h1 class="text-5xl font-bold">Crowdplayer</h1>
+                <p class="py-6">
+                    Crowdplayer is an open-source CrowdDJ clone that plays your own music library.
+                    No account needed, every file stays on your device, and any tracks partygoers upload come straight
+                    to you.
+                </p>
+                <div class="flex flex-col md:flex-row gap-5 justify-center w-full">
+                    <div class="card bg-base-100 w-full shadow-sm">
+                        <div class="card-body">
+                            <h2 class="text-2xl font-bold text-center">Host a Party</h2>
+                            <p>This device selects a local music folder, plays audio, and runs the queue. Controllers
+                                browse the library, add tracks, and send their own files.</p>
+                            <div class="card-actions justify-end">
+                                <button id="enter-host" class="btn btn-primary w-full">Enter</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card bg-base-100 w-full shadow-sm">
+                        <div class="card-body">
+                            <h2 class="text-2xl font-bold text-center">Join a party</h2>
+                            <p>Add songs to an existing queue, either from the Host's library or your files</p>
+                            <div class="card-actions justify-end">
+                                <button id="enter-party" class="btn btn-primary w-full">Enter</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="index.js"></script>
+</body>
+
+</html>
