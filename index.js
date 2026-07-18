@@ -1,10 +1,10 @@
-button_EnterHost = document.querySelector("#enter-host")
-button_EnterParty = document.querySelector("#enter-party")
+button_setup_pickFolder = document.querySelector("#enter-host")
+button_setup_Continue = document.querySelector("#enter-party")
 
-button_EnterHost.addEventListener("click",()=>{
+button_setup_pickFolder.addEventListener("click",()=>{
     window.location.href = "/host"
 })
 
-button_EnterParty.addEventListener("click",()=>{
+button_setup_Continue.addEventListener("click",()=>{
     window.location.href = "/join"
 })
