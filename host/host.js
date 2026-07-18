@@ -14,6 +14,7 @@ async function showQuota() {
     catch (e) {
         alert(`Error calculating storage usage
 Error code: ${e}`)
+            console.error(e)
     }
 }
 showQuota()
@@ -88,6 +89,7 @@ button_setup_pickFolder.addEventListener("click", async () => {
 
     }
     catch (e) {
+            console.error(e)
         alert(`Sorry! 
 It seems your browser might be too old for some of our functionality, maybe check for updates? (if you're on an EOL operating system like windows 8 or older, try Supermium, it's Google Chrome but with updates from newer windows versions!)
 
@@ -113,6 +115,7 @@ button_setup_Process.addEventListener("click", async () => {
                     musicFilesMeta[path] = id3
                     console.log(id3);
                 } catch (err) {
+            console.error(e)
                     console.warn("Skipping (parse failed):", musicFiles[i].name, err);
                 }
             }
@@ -144,6 +147,8 @@ button_setup_Process.addEventListener("click", async () => {
 
     }
     catch (e) {
+            console.error(e)
+
         alert(`An error occured
 
 Error code: ${e}`)
