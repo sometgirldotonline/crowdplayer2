@@ -42,7 +42,7 @@ async function readJsonFromOpfs(fileName) {
         return jsonObject;
     } catch (error) {
         console.error(`Error reading ${fileName}:`, error);
-        return null;
+        return {};
     }
 }
 let musicFilesMeta = {}
