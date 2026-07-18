@@ -1,3 +1,4 @@
+
 if (!navigator.storage && !navigator.storage.estimate) {
     alert(`Sorry! 
 It seems your browser might be too old for some of our functionality, maybe check for updates?
