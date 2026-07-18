@@ -51,6 +51,9 @@ readJsonFromOpfs("meta.json").then(meta => {
 }).catch(() => {
     musicFilesMeta = {}
 })
+if (musicFilesMeta == null){
+    musicFilesMeta = {}
+}
 let library = {}
 let musicFileFormats = ["mp3", "m4a", "aac", "wav", "flac", "ogg", "opus", "webm"]
 async function sha256(string) {
