@@ -153,7 +153,7 @@ Error code: ${e}`)
 })
 
 button_setup_Continue.addEventListener("click", () => {
-    window.location.href = "/host/player"
+    window.location.href = "./host/player"
 })
 
 async function purgeCache() {
