@@ -147,7 +147,7 @@ join_Continue_Button.addEventListener("click", () => {
             }
             if (Object.hasOwn(library, data.artist)) {
                 library[data.artist][data.album] = data.albumdata
-                albumArts[sha256(`${data.artist}-${data.album}`)] = data.image
+                albumArts[`${data.artist}-${data.album}`] = data.image
             }
             if (albumsToExpect == Object.values(library).reduce((sum, albums) => sum + Object.keys(albums).length, 0)) {
                 console.log("Recieved", Object.values(library).reduce((sum, albums) => sum + Object.keys(albums).length, 0), "albums from peer")
@@ -182,7 +182,7 @@ join_Continue_Button.addEventListener("click", () => {
                         li.classList.add("h-fit")
                         let imgdiv = document.createElement("div")
                         let img = document.createElement("img")
-                        img.src = albumArts[sha256(`${artist}-${album}`)]
+                        img.src = albumArts[`${artist}-${album}`]
                         img.classList.add("size-10")
                         img.classList.add("rounded-box")
                         imgdiv.appendChild(img)
@@ -196,6 +196,35 @@ join_Continue_Button.addEventListener("click", () => {
                         metaDiv.appendChild(artistInfo)
                         li.appendChild(metaDiv)
                         document.querySelector("#album-list").appendChild(li)
+                        console.log(library[artist][album])
+                        let tracks = Object.keys(library[artist][album]).sort((a, b) => { a.localeCompare(b) })
+                        console.log(tracks)
+                        tracks.forEach(track => {
+                            if (track != "duration_key") {
+                                let trk = library[artist][album][track]
+                                let li = document.createElement("li")
+                                li.classList.add("list-row")
+                                li.classList.add("btn")
+                                li.classList.add("h-fit")
+                                let imgdiv = document.createElement("div")
+                                let img = document.createElement("img")
+                                img.src = albumArts[`${artist}-${album}`]
+                                img.classList.add("size-10")
+                                img.classList.add("rounded-box")
+                                imgdiv.appendChild(img)
+                                li.appendChild(imgdiv)
+                                let metaDiv = document.createElement("div")
+                                let artistName = document.createElement("div")
+                                artistName.innerText = track
+                                metaDiv.appendChild(artistName)
+                                let artistInfo = document.createElement("div")
+                                artistInfo.innerText = artist
+                                metaDiv.appendChild(artistInfo)
+                                li.appendChild(metaDiv)
+                                document.querySelector("#track-list").appendChild(li)
+                            }
+                        })
+
                     })
                 })
                 console.log(albumArts)

@@ -34,6 +34,7 @@ let library = {}
 let musicFileFormats = ["mp3", "m4a", "aac", "wav", "flac", "ogg", "opus", "webm"]
 let parsedSongs = false
 let albumarts = {}
+const DEFAULT_ALBUM_ART_URL = 'https://via.placeholder.com/300x300/cccccc/666666?text=Album';
 
 // readJsonFromOpfs("meta.json").then(meta => {
 //     musicFilesMeta = meta
@@ -49,16 +50,20 @@ let albumarts = {}
 async function setup_walkFiles(folder, path = "/") {
     for await (const entry of folder.values()) {
         console.log(entry.kind, entry.name);
-        if (entry.kind == "file" && musicFileFormats.includes(entry.name.split(".").pop().toLowerCase())) {
-            // musicFiles.push(entry)
-            musicFiles[`${path}${entry.name}`] = entry
-            console.log("adding", `${path}${entry.name}`)
-        }
-        else if (entry.kind == "directory") {
-            await setup_walkFiles(entry, path + entry.nfolderame + "/")
-            console.log("trampling into ", path + entry.name + "/")
+
+        if (
+            entry.kind === "file" &&
+            musicFileFormats.includes(entry.name.split(".").pop().toLowerCase())
+        ) {
+            musicFiles[`${path}${entry.name}`] = entry;
+            console.log("adding", `${path}${entry.name}`);
+        } else if (entry.kind === "directory") {
+            const dirPath = `${path}${entry.name}/`;
+            console.log("trampling into", dirPath);
+            await setup_walkFiles(entry, dirPath);
         }
     }
+}
 }
 
 async function setup_processId3(file) {
@@ -107,6 +112,7 @@ button_setup_Process.addEventListener("click", async () => {
                     musicFilesMeta[path] = id3.common
                     if (id3.common.picture?.[0]) {
                         musicFilesMeta[path]._coverDataUri = toDataURI(id3.common.picture[0].data, id3.common.picture[0].format)
+                        console.log("AArt1 for ", meta.artist, "-", meta.album, "=", toDataURI(id3.common.picture[0].data, id3.common.picture[0].format))
                     }
                 } catch (err) {
                     console.error(err)
@@ -129,7 +135,14 @@ button_setup_Process.addEventListener("click", async () => {
 
             if (library[meta.artist][meta.album] == null || library[meta.artist][meta.album] == undefined) {
                 library[meta.artist][meta.album] = {}
-                albumarts[sha256(`${meta.artist}-${meta.album}`)] = meta._coverDataUri || null
+                // Use timestamp to ensure each album gets a unique key
+                const albumArtKey =`${meta.artist}-${meta.album}`;
+                console.log(`${meta.artist}-${meta.album}`, albumArtKey)
+                // Use actual cover image if available, otherwise use default placeholder URL
+                albumarts[albumArtKey] = meta._coverDataUri || DEFAULT_ALBUM_ART_URL;
+                console.log("AArt2 for ", meta.artist, "-", meta.album, "=",albumArtKey, meta._coverDataUri)
+                // Store album art mapping with album reference for client
+                library[meta.artist][meta.album].duration_key = albumArtKey;
             }
             library[meta.artist][meta.album][meta.title] = {
                 "album": meta.album,
@@ -137,10 +150,12 @@ button_setup_Process.addEventListener("click", async () => {
                 "date": meta.date,
                 "year": meta.year,
                 "album": meta.album,
+                "path": path
             }
             document.querySelector("#parseprocess").value = i + 1;
             i++;
         }
+        console.log(albumarts)
         // writeJsonToOpfs(`library-.json`, library)
         console.log("done")
         window.library = library
@@ -247,7 +262,8 @@ function initPlayer() {
                                 artist,
                                 album,
                                 idx,
-                                image: albumarts[sha256(`${artist}-${album}`)]
+                                // Get the album art key from the stored duration_key
+                                image: albumarts[library[artist][album].duration_key]
                             });
                             idx++;
                             // This will now properly pause the loop if the buffer is full
@@ -265,5 +281,6 @@ function initPlayer() {
 }
 if (search.get("id")) {
     partyName = search.get("id") + " Testing Party"
-    initPlayer()
+    document.querySelector("#party-name").value = partyName
+    // initPlayer()
 }

@@ -90,7 +90,13 @@
     <div class="library bg-base-200 hidden flex-1 min-h-0 w-full flex flex-col" id="library">
         <div class="flex-1 min-h-0 flex flex-col p-2" id="library-content">
             <div class="tabs tabs-box bg-base-100 w-full flex-1 min-h-0 outline-none">
-                <input type="radio" name="music_categories" class="tab w-1/3 font-bold text-xl" aria-label="Artists"
+                <input type="radio" name="music_categories" class="tab w-1/4 font-bold text-xl" aria-label="Queue" />
+                <div class="tab-content border-base-300 bg-base-200 overflow-auto p-6">
+                    <ul class="list bg-base-100 flex-1 min-h-0 overflow-auto h-full" id="queue-list">
+
+                    </ul>
+                </div>
+                <input type="radio" name="music_categories" class="tab w-1/4 font-bold text-xl" aria-label="Artists"
                     checked="checked" />
                 <div class="tab-content border-base-300 bg-base-200 overflow-auto" id="artist-tab">
                     <ul class="list bg-base-100 flex-1 min-h-0 overflow-auto h-full" id="artists-list">
@@ -98,14 +104,14 @@
                     </ul>
                 </div>
 
-                <input type="radio" name="music_categories" class="tab w-1/3 font-bold text-xl" aria-label="Albums" />
+                <input type="radio" name="music_categories" class="tab w-1/4 font-bold text-xl" aria-label="Albums" />
                 <div class="tab-content border-base-300 bg-base-200 overflow-auto p-6">
                     <ul class="list bg-base-100 flex-1 min-h-0 overflow-auto h-full" id="album-list">
 
                     </ul>
                 </div>
 
-                <input type="radio" name="music_categories" class="tab w-1/3 font-bold text-xl" aria-label="Tracks" />
+                <input type="radio" name="music_categories" class="tab w-1/4 font-bold text-xl" aria-label="Tracks" />
                 <div class="tab-content border-base-300 bg-base-200 overflow-auto p-6">
                     <ul class="list bg-base-100 flex-1 min-h-0 overflow-auto h-full" id="track-list">
 
