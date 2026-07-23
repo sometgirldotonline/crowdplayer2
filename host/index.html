@@ -5,64 +5,111 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crowdplayer</title>
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <!-- <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+     -->
+    <link rel="stylesheet" href="/styles.dist.css">
+
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,700,1,200"
         rel="stylesheet" />
-    <script type="module">
-        import { parseBlob } from "https://cdn.jsdelivr.net/npm/music-metadata-browser@2.5.11/+esm"
-        window.parseBlob = parseBlob
-    </script>
-    <script src="../helpers.js"></script>
+    <script src="/helpers.js"></script>
+    <style>
+
+    </style>
 </head>
 
 <body class="min-h-screen flex flex-col min-h-screen">
-    <div class="navbar bg-base-100 shadow-sm">
-        <div class="flex-1">
-            <a class="btn btn-ghost text-xl">daisyUI</a>
+    <main class="setup flex flex-col min-h-screen min-w-screen">
+        <div class="navbar bg-base-100 shadow-sm">
+            <div class="flex-1">
+                <a class="btn btn-ghost text-xl">Crowdplayer</a>
+            </div>
+            <div class="flex-none">
+                <ul class="menu menu-horizontal px-1 flex-row flex gap-1">
+                    <!-- <span id="quota" class="text-slate-700 px-1">--MB/--MB Used</span> -->
+                    <!-- <li><button onclick="purgeCache()" class="btn btn-error btn-soft">Purge cached data</button></li> -->
+                    <!-- <li><button class="btn btn-error btn-soft">End Party</button></li> -->
+                </ul>
+            </div>
         </div>
-        <div class="flex-none">
-            <ul class="menu menu-horizontal px-1 flex-row flex gap-1">
-                <span id="quota" class="text-slate-700 px-1">--MB/--MB Used</span>
-                <li><button onclick="purgeCache()" class="btn btn-error btn-soft">Purge cached data</button></li>
-                <li><button class="btn btn-error btn-soft">End Party</button></li>
-            </ul>
-        </div>
-    </div>
-    <div class="hero bg-base-200 grow">
-        <div class="hero-content text-center max-w-lg">
-            <div class="max-w-lg justify-center">
-                <h1 class="text-5xl font-bold">Let's get the party started!</h1>
-                <p class="py-6">
-                    But first, some setup:
-                </p>
-                <div class="flex flex-col md:flex-row gap-5 justify-center w-full">
-                    <div class="card bg-base-100 w-full shadow-sm">
-                        <div class="card-body">
-                            <h2 class="text-2xl font-bold text-center">Your files?</h2>
-                            <p>Please select your music folder. This may take a while the first time, so make sure you
-                                picked the right folder (make sure you didn't highlight a subfolder!). Crowdplayer
-                                accepts all common music file types<br><b>Examples: </b>mp3, m4a, aac, wav, flac, ogg*,
-                                opus, webm<br><small>* no Ogg support on Apple Safari</small><br><br><i>all your music
-                                    are belong to us /silly.</i></p>
-                            <progress class="progress progress-primary w-full" id="parseprocess" value="0" max="0"
-                                hidden></progress>
-                            <div class="card-actions justify-end">
-                                <button id="setup-pick-folder" class="btn btn-primary w-full">Select</button>
-                                <button id="setup-process-folder" class="btn btn-primary w-full"
-                                    disabled>Process</button>
+        <div class="hero bg-base-200 grow">
+            <div class="hero-content text-center max-w-lg">
+                <div class="max-w-lg justify-center">
+                    <h1 class="text-5xl font-bold">Let's get the party started!</h1>
+                    <p class="py-6">
+                        But first, some setup:
+                    </p>
+                    <div class="flex flex-col gap-5 justify-center w-full">
+                        <div class="card bg-base-100 w-full shadow-sm">
+                            <div class="card-body">
+                                <h2 class="text-2xl font-bold text-center">Name your party</h2>
+                                <p>This name will be displayed to people when they connect, if you have more than one
+                                    Crowdplayer at this party, consider naming them clearly.</p>
+                                <div class="card-actions justify-end pt-2">
+                                    <input type="text" placeholder="Name goes here" class="input w-full input-lg"
+                                        id="party-name" required />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card bg-base-100 w-full shadow-sm">
+                            <div class="card-body">
+                                <h2 class="text-2xl font-bold text-center">Your files?</h2>
+                                <p>Please select your music folder. This may take a while the first time, so make sure
+                                    you
+                                    picked the right folder (make sure you didn't highlight a subfolder!). Crowdplayer
+                                    accepts all common music file types<br><b>Examples: </b>mp3, m4a, aac, wav, flac,
+                                    ogg*,
+                                    opus, webm<br><small>* no Ogg support on Apple Safari</small><br><br><i>all your
+                                        music
+                                        are belong to us /silly.</i></p>
+                                <progress class="progress progress-primary w-full" id="parseprocess" value="0" max="0"
+                                    hidden></progress>
+                                <div class="card-actions justify-end">
+                                    <button id="setup-pick-folder" class="btn btn-primary w-full">Select</button>
+                                    <button id="setup-process-folder" class="btn btn-primary w-full"
+                                        disabled>Process</button>
+                                </div>
                             </div>
                         </div>
                     </div>
+                    <br>
+                    <button id="setup-continue" title="Select files first!" disabled
+                        class="btn btn-primary w-full">Continue
+                        <span class="material-symbols-rounded">keyboard_arrow_right</span></button>
                 </div>
-                <br>
-                <button id="setup-continue" title="Select files first!" disabled class="btn btn-primary w-full">Continue
-                    <span class="material-symbols-rounded">keyboard_arrow_right</span></button>
             </div>
         </div>
-    </div>
-    <script src="./host.js"></script>
+    </main>
+    <main class="party hidden min-h-screen min-w-screen">
+        <div class="hero min-h-screen"
+            style="background-image: url(https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtu9K_EhV3X5FrRG_h9CPUES7ZwYLHGFIBpipRLsAWJucrIvDGm2pS_XWn&s=10);">
+            <div class="hero-overlay" style="backdrop-filter: blur(50px);"></div>
+            <div class="hero-content flex-col lg:flex-row text-neutral-content gap-20 px-1 w-full">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtu9K_EhV3X5FrRG_h9CPUES7ZwYLHGFIBpipRLsAWJucrIvDGm2pS_XWn&s=10"
+                    class="max-w-2xl w-2xl aspect-square rounded-lg shadow-2xl object-fill" />
+                <div>
+                    <h1 class="text-7xl py-3 font-bold">Song Name</h1>
+                    <h2 class="text-6xl py-3 font-bold">Artist</h2>
+                    <h2 class="text-5xl py-3 italic">Album</h2>
+                    <h2 class="text-3xl py-3">Submitted by {name}</h2>
+                    <h2 class="text-2xl py-3">--:-- / --:--</h2>
+                </div>
+            </div>
+        </div>
+        <div class="toast toast-bottom toast-end">
+            <div class="alert block text-center">
+                <span class="font-bold text-xl block">Join the Queue</span>
+                <span class="py-2 text-md block">
+                    Go to <span class="font-semibold text-primary">crowdplayer.app/join</span> and enter code:
+                </span>
+                <code
+                    class="bg-slate-200 px-3 py-1 text-2xl rounded-md border-slate-300 border-2 inline-block font-bold font-mono tracking-[0.2em] pr-2 mt-1 text-center"
+                    id="code">______</code>
+            </div>
+        </div>
+    </main>
+    <script src="/host/host.js" type="module"></script>
 </body>
 
 </html>
