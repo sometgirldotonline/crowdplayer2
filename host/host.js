@@ -2,7 +2,25 @@ import { parseBlob } from "https://cdn.jsdelivr.net/npm/music-metadata@latest/+e
 import { Peer } from "https://cdn.jsdelivr.net/npm/peerjs@1.5.5/+esm";
 import '../helpers.js'
 window.CrowdplayerState = {}
+window.CrowdplayerState.rlistIndex = -1
+function broadcastUpNext(cns = conns) {
+    const rlist = CrowdplayerState.rlist || []
+    const queue = CrowdplayerState.queue || []
+    const idx = CrowdplayerState.rlistIndex
 
+    let upNext
+    if (idx === -1) {
+        upNext = [...queue, ...rlist]
+    } else {
+        upNext = [
+            ...rlist.slice(0, idx + 1),
+            ...queue,
+            ...rlist.slice(idx + 1)
+        ]
+    }
+
+    cns.forEach(c => c.send({ "msg": "upnext", "list": upNext }))
+}
 let button_setup_pickFolder = document.querySelector("#setup-pick-folder")
 let button_setup_Continue = document.querySelector("#setup-continue")
 let button_setup_Process = document.querySelector("#setup-process-folder")
@@ -79,6 +97,7 @@ let currentSong = {}
 async function playSongByPath(songData, from = "Other", onEnded = () => { }) {
     console.log(songData)
     currentSong = songData
+    currentSong.from = from
     return new Promise(async (resolve, reject) => {
         songData = await songData
         const parts = songData.path.replace(/^\/+|\/+$/g, '').split('/');
@@ -97,7 +116,9 @@ async function playSongByPath(songData, from = "Other", onEnded = () => { }) {
         console.log(albumarts)
         document.querySelector("#playerhero").style.backgroundImage = `url("${albumarts[`${songData.artists[0]}-${songData.album}`]}")`
         conns.forEach(con => {
-            con.send({ "msg": "PlaybackUpdate", "title": songData.title, "artist": songData.artists, "artkey": `${songData.artists[0]}-${songData.album}`, from })
+            console.log("Sending playback update from the playsong")
+
+            con.send({ "msg": "PlaybackUpdate", "title": currentSong.title, "album": currentSong.album || "Unknown", "artist": currentSong.artists || "Unknown", "artkey": `${currentSong.artists[0] || "Unknown"}-${currentSong.album || "Unknown"}`, "from": currentSong.from })
         });
         const audioUrl = URL.createObjectURL(file);
         const audio = document.getElementById('player');
@@ -276,7 +297,7 @@ button_setup_Process.addEventListener("click", async () => {
                 if (window.CrowdplayerState.library[meta.artists[0] || meta.artist][meta.album] == null || window.CrowdplayerState.library[meta.artists[0] || meta.artist][meta.album] == undefined) {
                     window.CrowdplayerState.library[meta.artists[0] || meta.artist][meta.album] = {}
                     // Use timestamp to ensure each album gets a unique key
-                    const albumArtKey = `${meta.artist[0]}-${meta.album}`;
+                    const albumArtKey = `${meta.artists[0]}-${meta.album}`;
                     // console.log(`${meta.artist}-${meta.album}`, albumArtKey)
                     // Use actual cover image if available, otherwise use default placeholder URL
                     albumarts[albumArtKey] = meta._coverDataUri || DEFAULT_ALBUM_ART_URL;
@@ -351,6 +372,7 @@ button_setup_Continue.addEventListener("click", () => {
 let runLoop = true
 // pickRandomPlaylist()
 window.CrowdplayerState.queue = []
+CrowdplayerState.rlist = []
 // Player
 window.conns = []
 async function initPlayer() {
@@ -382,8 +404,10 @@ async function initPlayer() {
     peer.on('connection', function (conn) {
         window.conns.push(conn)
         conn.on("close", () => {
-            window.conns.remove(conn)
-
+            const index = window.conns.indexOf(conn);
+            if (index > -1) {
+                window.conns.splice(index, 1);
+            }
         })
         console.log("Got connection from", conn.peer)
 
@@ -402,6 +426,8 @@ async function initPlayer() {
                     } catch (error) {
                         conn.send({ "msg": "AddToQueue", "success": false, "error": error })
                     }
+                    broadcastUpNext()
+
                 }
                 if (data.msg == "Get-Library") {
                     let totalMessages = Object.values(window.CrowdplayerState.library).reduce((sum, albums) => sum + Object.keys(albums).length, 0);
@@ -430,8 +456,13 @@ async function initPlayer() {
                     }
                     setTimeout(() => {
                         if (currentSong != {}) {
-                            conn.send({ "msg": "PlaybackUpdate", "title": currentSong.title || "Unknown", "artist": currentSong.artists || "Unknown", "artkey": `${currentSong.artists[0] || "Unknown"}-${currentSong.album || "Unknown"}` })
+                            console.log("Sending playback update from the init")
+                            conn.send({ "msg": "PlaybackUpdate", "title": currentSong.title, "artist": currentSong.artists, "album": currentSong.album, "artkey": `${currentSong.artists[0]}-${currentSong.album}`, "from": currentSong.from })
+
                         }
+                        conn.send({ "msg": "queue", "list": CrowdplayerState.queue })
+                        conn.send({ "msg": "randomplaylist", "list": CrowdplayerState.rlist })
+                        broadcastUpNext([conn])
                     }, 100)
                 }
             });
@@ -439,22 +470,20 @@ async function initPlayer() {
         });
     });
     while (runLoop) {
-        let rlist = pickRandomPlaylist()
-        conns.forEach((c) => {
-            c.send({ "msg": "randomplaylist", "list": rlist })
-        })
-        for (let song in rlist) {
-            await playSongByPath(rlist[song], "rlist")
-            if (window.CrowdplayerState.queue.length > 0) {
-                console.log("Queue has items!")
-                conns.forEach((c) => {
-                    c.send({ "msg": "queue", "list": CrowdplayerState.queue })
-                })
-            }
+        CrowdplayerState.rlist = pickRandomPlaylist()
+        for (let song = 0; song < CrowdplayerState.rlist.length; song++) {
+            CrowdplayerState.rlistIndex = song
+            await playSongByPath(CrowdplayerState.rlist[song], "rlist")
+            broadcastUpNext()
             while (window.CrowdplayerState.queue.length > 0) {
-                console.log("Playing", window.CrowdplayerState.queue[0])
-                await playSongByPath(window.CrowdplayerState.queue[0], "queue")
+                let queuedTrack = window.CrowdplayerState.queue[0]
+                await playSongByPath(queuedTrack, "queue")
                 window.CrowdplayerState.queue.shift()
+                // tracks now dont disapear into the aether
+                CrowdplayerState.rlistIndex++
+                CrowdplayerState.rlist.splice(CrowdplayerState.rlistIndex, 0, queuedTrack)
+                song = CrowdplayerState.rlistIndex
+                broadcastUpNext()
             }
         }
     }

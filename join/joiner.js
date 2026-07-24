@@ -8,6 +8,35 @@ let join_connectChecker_Bad = document.querySelector("#connect-checker-bad")
 let join_connectChecker_Spinner = document.querySelector("#connect-checker-spinner")
 let search = new URLSearchParams(window.location.search)
 join_Connect_Code.value = search.get("id") || ""
+async function peerExists(id) {
+    return new Promise((resolve) => {
+        const testPeer = new Peer(id);
+
+        let finished = false;
+
+        function done(result) {
+            if (finished) return;
+            finished = true;
+            testPeer.destroy();
+            resolve(result);
+        }
+
+        testPeer.on("open", () => {
+            done(false);
+        });
+
+        testPeer.on("error", (err) => {
+            if (err.type === "unavailable-id") {
+                done(true);
+            } else {
+                console.error(err);
+                done(null);
+            }
+        });
+
+        setTimeout(() => done(null), 3000);
+    });
+}
 window.library = {}
 import { Peer } from "https://cdn.jsdelivr.net/npm/peerjs@1.5.5/+esm";
 var peer = new Peer({
@@ -53,7 +82,7 @@ function successState(reason) {
     join_connectChecker_Good.style.display = "block"
 }
 let hasSetup = false
-join_Connect_Code.addEventListener("input", () => {
+join_Connect_Code.addEventListener("input", async () => {
     if (join_Connect_Code.checkValidity() && join_Connect_Code.value.length == 6) {
         if (window.conn) {
             conn.close()
@@ -63,7 +92,24 @@ join_Connect_Code.addEventListener("input", () => {
         join_connectChecker_Good.style.display = "none"
         join_connectChecker_Bad.style.display = "none"
         let startTime = Date.now()
-        window.conn = peer.connect("CrowdPlayer-PeerJS-ID-" + join_Connect_Code.value);
+        const id = "CrowdPlayer-PeerJS-ID-" + join_Connect_Code.value;
+
+        join_connectChecker_Spinner.classList.remove("hidden");
+
+        const exists = await peerExists(id);
+
+        if (exists === false) {
+            faliureState("No party exists with that code.");
+            return;
+        }
+
+        if (exists === null) {
+            faliureState("Couldn't reach the PeerJS server.");
+            return;
+        }
+
+        // Only now attempt to connect.
+        window.conn = peer.connect(id);
         conn.on("open", () => {
             if (hasSetup == false) {
                 console.log("Peer exists and connection established in", (Date.now() - startTime) / 1000, "seconds");
@@ -129,6 +175,71 @@ Error: ${err}`)
 //</li>
 let albumsToExpect = -1
 let albumArts = {}
+let currentSong = {}
+window.CrowdplayerState = {}
+function renderUpNext() {
+    let list = document.querySelector("#queue-list")
+    if (!list) return
+    list.innerHTML = ""
+
+    let csartists = Array.isArray(currentSong.artists) ? currentSong.artists
+        : Array.isArray(currentSong.artist) ? currentSong.artist
+            : [currentSong.artist]
+    let currentKey = sha256(`${currentSong.title}-${currentSong.album}-${csartists.join(",")}`)
+
+    let nowPlayingIndex = CrowdplayerState.upNext.findIndex(track => {
+        let artists = Array.isArray(track.artists) ? track.artists
+            : Array.isArray(track.artist) ? track.artist
+                : [track.artist]
+        return sha256(`${track.title}-${track.album}-${artists.join(",")}`) == currentKey
+    })
+
+    CrowdplayerState.upNext.forEach((track, i) => {
+        let artists = Array.isArray(track.artists) ? track.artists
+            : Array.isArray(track.artist) ? track.artist
+                : [track.artist]
+
+        let li = document.createElement("li")
+        li.classList.add("list-row")
+        li.classList.add("btn")
+        li.classList.add("h-fit")
+        li.id = `QueueItem-${sha256(`${track.title}-${track.album}-${artists.join(",")}`)}`
+        li.setAttribute("played", false)
+
+        if (i === nowPlayingIndex) {
+            li.setAttribute("played", true)
+            li.classList.add("bg-primary-content")
+            li.classList.add("scrolltomeee")
+        }
+
+        let imgdiv = document.createElement("div")
+        let img = document.createElement("img")
+        img.src = albumArts[`${artists[0]}-${track.album}`]
+        img.classList.add("size-10")
+        img.classList.add("rounded-box")
+        imgdiv.appendChild(img)
+        li.appendChild(imgdiv)
+
+        let metaDiv = document.createElement("div")
+        let titleDiv = document.createElement("div")
+        titleDiv.innerText = track.title
+        metaDiv.appendChild(titleDiv)
+
+        let artistDiv = document.createElement("div")
+        artistDiv.classList.add("text-xs")
+        artistDiv.classList.add("opacity-60")
+        artistDiv.innerText = artists.join(", ")
+        metaDiv.appendChild(artistDiv)
+
+        li.appendChild(metaDiv)
+        list.appendChild(li)
+    })
+
+    let scrollTarget = list.querySelector(".scrolltomeee")
+    if (scrollTarget) {
+        scrollTarget.scrollIntoView({ behavior: "smooth", block: "center" })
+    }
+}
 join_Continue_Button.addEventListener("click", () => {
     document.querySelector("#connect").classList.add("hidden")
     document.querySelector("#connecting").classList.remove("hidden")
@@ -140,17 +251,29 @@ join_Continue_Button.addEventListener("click", () => {
         if (data.msg == "Expect-Albums") {
             albumsToExpect = data.expect
         }
-        if (data.msg == "PlaybackUpdate"){
+        if (data.msg == "queue") {
+            CrowdplayerState.queue = data.list
+        }
+        if (data.msg == "randomplaylist") {
+            CrowdplayerState.rlist = data.list
+        }
+        if (data.msg == "upnext") {
+            CrowdplayerState.upNext = data.list
+            renderUpNext()
+        }
+        if (data.msg == "PlaybackUpdate") {
             document.querySelector("#currentArt").src = albumArts[data.artkey]
             document.querySelector("#currentTrack").innerText = data.title
             document.querySelector("#currentArtist").innerText = data.artist.join(", ")
+            currentSong = data
+            renderUpNext()
         }
         if (data.msg == "AddToQueue") {
             if (data.success) {
                 showToast(`<b>Added track to queue successfully</b>`)
 
             }
-            else{
+            else {
                 showToast(`<b>Failed adding track to queue</b>`)
 
             }
@@ -237,7 +360,7 @@ join_Continue_Button.addEventListener("click", () => {
                                 li.appendChild(metaDiv)
                                 li.onclick = () => {
                                     showToast(`<b>Adding <i>${htmlspecialchars(track)}</i> to the queue</b>`)
-                                    let tmp= trk
+                                    let tmp = trk
                                     trk.msg = "AddToQueue"
                                     conn.send(tmp)
                                 }
@@ -252,6 +375,10 @@ join_Continue_Button.addEventListener("click", () => {
                 // console.log(albumArts)
             }
         }
+    })
+    conn.on("close", () => {
+        alert("Disconnected from party.")
+        window.location.href = "/join/"
     })
 })
 

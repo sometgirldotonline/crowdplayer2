@@ -25,11 +25,6 @@
         <div class="flex-1">
             <a class="btn btn-ghost text-xl">Crowdplayer</a>
         </div>
-        <div class="flex-none">
-            <ul class="menu menu-horizontal px-1 flex-row flex gap-1">
-                <li><button class="btn btn-error btn-soft">Exit Party</button></li>
-            </ul>
-        </div>
     </div>
 
     <div class="hero bg-base-200 connect overflow-auto flex-1 min-h-0" id="connect">
@@ -104,28 +99,28 @@
     <div class="library bg-base-200 hidden flex-1 min-h-0 w-full flex flex-col" id="library">
         <div class="flex-1 min-h-0 flex flex-col p-2" id="library-content gap-10">
             <div class="tabs tabs-box bg-base-100 w-full flex-1 min-h-0 outline-none shrink h-full">
-                <input type="radio" name="music_categories" class="tab w-1/4 font-bold text-xl" aria-label="Queue" />
+                <input type="radio" name="music_categories" class="tab w-1/2 font-bold text-xl" aria-label="Queue" checked="checked" />
                 <div class="tab-content border-base-300 bg-base-200 overflow-auto p-6">
                     <ul class="list bg-base-100 flex-1 min-h-0 overflow-auto h-full" id="queue-list">
 
                     </ul>
                 </div>
-                <input type="radio" name="music_categories" class="tab w-1/4 font-bold text-xl" aria-label="Artists"
-                    checked="checked" />
-                <div class="tab-content border-base-300 bg-base-200 overflow-auto" id="artist-tab">
+                <input type="radio" name="music_categories" class="tab w-1/4 font-bold text-xl hidden" aria-label="Artists"
+                     />
+                <div class="tab-content border-base-300 bg-base-200 overflow-auto hidden" id="artist-tab">
                     <ul class="list bg-base-100 flex-1 min-h-0 overflow-auto h-full" id="artists-list">
 
                     </ul>
                 </div>
 
-                <input type="radio" name="music_categories" class="tab w-1/4 font-bold text-xl" aria-label="Albums" />
-                <div class="tab-content border-base-300 bg-base-200 overflow-auto p-6">
+                <input type="radio" name="music_categories" class="tab w-1/4 font-bold text-xl hidden" aria-label="Albums" />
+                <div class="tab-content border-base-300 bg-base-200 overflow-auto p-6 hidden">
                     <ul class="list bg-base-100 flex-1 min-h-0 overflow-auto h-full" id="album-list">
 
                     </ul>
                 </div>
 
-                <input type="radio" name="music_categories" class="tab w-1/4 font-bold text-xl" aria-label="Tracks" />
+                <input type="radio" name="music_categories" class="tab w-1/2 font-bold text-xl" aria-label="Tracks" />
                 <div class="tab-content border-base-300 bg-base-200 overflow-auto p-6">
                     <ul class="list bg-base-100 flex-1 min-h-0 overflow-auto h-full" id="track-list">
 
