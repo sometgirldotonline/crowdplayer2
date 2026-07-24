@@ -43,16 +43,16 @@ var peer = new Peer({
     config: {
         iceServers: [
             { urls: 'stun:stun.l.google.com:19302' },
-            // {
-            //     urls: 'turn:free.expressturn.com:3478',
-            //     username: '000000002099904145',
-            //     credential: 'QEmutNYA8Wredn4OZ7ITkQTRzAo='
-            // }
             {
-                url: 'turn:127.0.0.1:3478',
-                credential: 'key1',
-                username: 'username1'
+                urls: 'turn:free.expressturn.com:3478',
+                username: '000000002099904145',
+                credential: 'QEmutNYA8Wredn4OZ7ITkQTRzAo='
             }
+            // {
+            //     url: 'turn:127.0.0.1:3478',
+            //     credential: 'key1',
+            //     username: 'username1'
+            // }
         ]
     }
 });
