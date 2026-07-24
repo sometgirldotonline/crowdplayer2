@@ -155,7 +155,7 @@ function showToast(html,timeout=5000){
         //     <div class="alert block text-center">
         //         <span class="font-bold text-xl block">Join the Queue</span>
         //         <span class="py-2 text-md block">
-        //             Go to <span class="font-semibold text-primary">crowdplayer.ftp.sh/join</span> and enter code:
+        //             Go to <span class="font-semibold text-primary">crowdplayer.sometgirl.online/join</span> and enter code:
         //         </span>
         //         <code
         //             class="bg-slate-200 px-3 py-1 text-2xl rounded-md border-slate-300 border-2 inline-block font-bold font-mono tracking-[0.2em] pr-2 mt-1 text-center"
