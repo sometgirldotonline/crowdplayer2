@@ -82,18 +82,18 @@
         </div>
     </main>
     <main class="party hidden min-h-screen min-w-screen">
-        <div class="hero min-h-screen"
+        <div class="hero min-h-screen" id="playerhero"
             style="background-image: url(https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtu9K_EhV3X5FrRG_h9CPUES7ZwYLHGFIBpipRLsAWJucrIvDGm2pS_XWn&s=10);">
             <div class="hero-overlay" style="backdrop-filter: blur(50px);"></div>
             <div class="hero-content flex-col lg:flex-row text-neutral-content gap-20 px-1 w-full">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtu9K_EhV3X5FrRG_h9CPUES7ZwYLHGFIBpipRLsAWJucrIvDGm2pS_XWn&s=10"
+                <img id="albart"
                     class="max-w-2xl w-2xl aspect-square rounded-lg shadow-2xl object-fill" />
                 <div>
-                    <h1 class="text-7xl py-3 font-bold">Song Name</h1>
-                    <h2 class="text-6xl py-3 font-bold">Artist</h2>
-                    <h2 class="text-5xl py-3 italic">Album</h2>
-                    <h2 class="text-3xl py-3">Submitted by {name}</h2>
-                    <h2 class="text-2xl py-3">--:-- / --:--</h2>
+                    <h1 class="text-7xl py-3 font-bold" id="songname">Song Name</h1>
+                    <h2 class="text-6xl py-3 font-bold" id="artname">Artist</h2>
+                    <h2 class="text-5xl py-3 italic" id="albname">Album</h2>
+                    <!-- <h2 class="text-4xl py-3">Submitted by {name}</h2> -->
+                    <h2 class="text-3xl py-3" id="pos">--:-- / --:--</h2>
                 </div>
             </div>
         </div>
@@ -109,6 +109,7 @@
             </div>
         </div>
     </main>
+    <audio id="player" class="hidden"></audio>
     <script src="/host/host.js" type="module"></script>
 </body>
 

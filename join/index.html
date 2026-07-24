@@ -84,9 +84,23 @@
             </div>
         </div>
     </div>
+    <div class="hero bg-base-200 connect overflow-auto flex-1 min-h-0 hidden" id="connecting">
+        <div class="hero-content text-center max-w-lg">
+            <div class="max-w-lg justify-center">
+                <h1 class="text-5xl font-bold pb-5">Now connecting to party</h1>
+                <div class="flex flex-col md:flex-row gap-5 justify-center w-full" id="join_Loading">
+                    <div class="card bg-base-100 w-full shadow-sm">
+                        <div class="card-body">
+                            <h2 class="text-2xl font-bold text-center">Connecting</h2>
+                            <p>Please wait while we retrieve the library</p>
+                            <span class="loading loading-ring text-primary loading-xl mx-auto mt-2"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <!-- Library subpage: this whole branch now forms an unbroken flex/height
-         chain from #library down to the scrollable <ul>, so nothing collapses -->
     <div class="library bg-base-200 hidden flex-1 min-h-0 w-full flex flex-col" id="library">
         <div class="flex-1 min-h-0 flex flex-col p-2" id="library-content">
             <div class="tabs tabs-box bg-base-100 w-full flex-1 min-h-0 outline-none">

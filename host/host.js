@@ -1,6 +1,8 @@
 import { parseBlob } from "https://cdn.jsdelivr.net/npm/music-metadata@latest/+esm"
 import { Peer } from "https://cdn.jsdelivr.net/npm/peerjs@1.5.5/+esm";
 import '../helpers.js'
+window.CrowdplayerState = {}
+
 let button_setup_pickFolder = document.querySelector("#setup-pick-folder")
 let button_setup_Continue = document.querySelector("#setup-continue")
 let button_setup_Process = document.querySelector("#setup-process-folder")
@@ -30,11 +32,11 @@ function toDataURI(uint8Array, mimeType) {
 let musicFolder = null
 let musicFiles = {}
 let musicFilesMeta = {}
-let library = {}
+window.CrowdplayerState.library = {}
 let musicFileFormats = ["mp3", "m4a", "aac", "wav", "flac", "ogg", "opus", "webm"]
 let parsedSongs = false
 let albumarts = {}
-const DEFAULT_ALBUM_ART_URL = 'https://via.placeholder.com/300x300/cccccc/666666?text=Album';
+const DEFAULT_ALBUM_ART_URL = 'https://placehold.co/400x400?text=No+Image';
 
 // readJsonFromOpfs("meta.json").then(meta => {
 //     musicFilesMeta = meta
@@ -44,8 +46,124 @@ const DEFAULT_ALBUM_ART_URL = 'https://via.placeholder.com/300x300/cccccc/666666
 // if (musicFilesMeta == null) {
 //     musicFilesMeta = {}
 // }
+function formatTime(seconds) {
+    if (isNaN(seconds)) return "00:00";
+
+    const minutes = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+
+    const mm = String(minutes).padStart(2, '0');
+    const ss = String(secs).padStart(2, '0');
+
+    return `${mm}:${ss}`;
+}
+function getImageDimensions(base64String) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    
+    img.onload = function() {
+      resolve({
+        width: img.naturalWidth,
+        height: img.naturalHeight
+      });
+    };
+    
+    img.onerror = function() {
+      reject(new Error("Failed to load image from base64 string."));
+    };
+    
+    img.src = base64String;
+  });
+}
+async function playSongByPath(songData, onEnded = () => { }) {
+    console.log(songData)
+    return new Promise(async (resolve, reject) => {
+        songData = await songData
+        const parts = songData.path.replace(/^\/+|\/+$/g, '').split('/');
+        let currentHandle = musicFolder;
+
+        for (let i = 0; i < parts.length - 1; i++) {
+            currentHandle = await currentHandle.getDirectoryHandle(parts[i]);
+        }
+
+        const fileHandle = await currentHandle.getFileHandle(parts[parts.length - 1]);
+        const file = await fileHandle.getFile();
+        document.querySelector("#songname").innerText = songData.title
+        document.querySelector("#artname").innerText = songData.artists.join(", ")
+        document.querySelector("#albname").innerText = songData.album
+        document.querySelector("#albart").src = albumarts[`${songData.artists[0]}-${songData.album}`]
+        console.log(albumarts)
+        document.querySelector("#playerhero").style.backgroundImage = `url("${albumarts[`${songData.artists[0]}-${songData.album}`]}")`
+        const audioUrl = URL.createObjectURL(file);
+        const audio = document.getElementById('player');
+        audio.src = audioUrl;
+        audio.onerror = (error) => reject(error);
+        audio.onended = resolve;
+        audio.addEventListener("timeupdate", () => {
+            document.querySelector("#pos").innerText = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`
+        })
+        if ("mediaSession" in navigator) {
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: songData.title,
+                artist: songData.artists.join(", "),
+                album: songData.album,
+                artwork: [
+                    {
+                        src: albumarts[`${songData.artists[0]}-${songData.album}`],
+                    },
+                ],
+            });
+
+            navigator.mediaSession.setActionHandler("play", () => {
+                audio.play()
+            });
+            navigator.mediaSession.setActionHandler("pause", () => {
+                audio.pause()
+            });
+            navigator.mediaSession.setActionHandler("previoustrack", null);
+            navigator.mediaSession.setActionHandler("nexttrack", () => {
+                audio.currentTime = audio.duration;
+            });
+        }
+        audio.play().catch(reject);
+    });
+
+}
 
 
+function pickRandomSong() {
+    let artistArray = Object.keys(window.CrowdplayerState.library)
+    let randomArtist = artistArray[Math.floor(Math.random() * artistArray.length)]
+    let albumArray = Object.keys(window.CrowdplayerState.library[randomArtist])
+    let randomAlbum = albumArray[Math.floor(Math.random() * albumArray.length)]
+    let trackArray = Object.keys(window.CrowdplayerState.library[randomArtist][randomAlbum])
+    let randomTrack = trackArray[Math.floor(Math.random() * trackArray.length)]
+    console.log(window.CrowdplayerState.library[randomArtist][randomAlbum][randomTrack])
+    return window.CrowdplayerState.library[randomArtist][randomAlbum][randomTrack]
+
+}
+function shuffle(array) {
+    const shuffled = [...array];
+
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
+    return shuffled;
+}
+function pickRandomPlaylist() {
+    let list = []
+    for (let artist of Object.keys(window.CrowdplayerState.library)) {
+        for (let album of Object.keys(window.CrowdplayerState.library[artist])) {
+            console.log(window.CrowdplayerState.library[artist][album])
+            for (let track of Object.keys(window.CrowdplayerState.library[artist][album])) {
+                list.push(window.CrowdplayerState.library[artist][album][track])
+            }
+        }
+    }
+    return shuffle(list)
+}
 
 async function setup_walkFiles(folder, path = "/") {
     for await (const entry of folder.values()) {
@@ -64,7 +182,6 @@ async function setup_walkFiles(folder, path = "/") {
         }
     }
 }
-}
 
 async function setup_processId3(file) {
     try {
@@ -75,6 +192,7 @@ async function setup_processId3(file) {
         console.error("Failed to parse metadata:", error);
     }
 }
+
 
 
 button_setup_pickFolder.addEventListener("click", async () => {
@@ -109,10 +227,16 @@ button_setup_Process.addEventListener("click", async () => {
             if (!Object.hasOwn(musicFilesMeta, path)) {
                 try {
                     const id3 = await setup_processId3(file);
-                    musicFilesMeta[path] = id3.common
-                    if (id3.common.picture?.[0]) {
-                        musicFilesMeta[path]._coverDataUri = toDataURI(id3.common.picture[0].data, id3.common.picture[0].format)
-                        console.log("AArt1 for ", meta.artist, "-", meta.album, "=", toDataURI(id3.common.picture[0].data, id3.common.picture[0].format))
+                    if (id3 !== undefined) {
+                        console.log(id3)
+                        musicFilesMeta[path] = id3.common
+                        if (id3.common.picture?.[0]) {
+                            musicFilesMeta[path]._coverDataUri = toDataURI(id3.common.picture[0].data, id3.common.picture[0].format)
+                            // console.log("AArt1 for ", id3.common.artist, "-", id3.common.album, "=", toDataURI(id3.common.picture[0].data, id3.common.picture[0].format))
+                        }
+                    }
+                    else {
+                        console.warn("Skipping (parse failed):", musicFiles[i], "id3 was undefined");
                     }
                 } catch (err) {
                     console.error(err)
@@ -129,28 +253,36 @@ button_setup_Process.addEventListener("click", async () => {
         document.querySelector("#parseprocess").max = Object.entries(musicFilesMeta).length
         i = 0;
         for (const [path, meta] of Object.entries(musicFilesMeta)) {
-            if (library[meta.artist] == null || library[meta.artist] == undefined) {
-                library[meta.artist] = {}
-            }
+            try {
 
-            if (library[meta.artist][meta.album] == null || library[meta.artist][meta.album] == undefined) {
-                library[meta.artist][meta.album] = {}
-                // Use timestamp to ensure each album gets a unique key
-                const albumArtKey =`${meta.artist}-${meta.album}`;
-                console.log(`${meta.artist}-${meta.album}`, albumArtKey)
-                // Use actual cover image if available, otherwise use default placeholder URL
-                albumarts[albumArtKey] = meta._coverDataUri || DEFAULT_ALBUM_ART_URL;
-                console.log("AArt2 for ", meta.artist, "-", meta.album, "=",albumArtKey, meta._coverDataUri)
-                // Store album art mapping with album reference for client
-                library[meta.artist][meta.album].duration_key = albumArtKey;
+                if (window.CrowdplayerState.library[meta.artists[0] || meta.artist] == null || window.CrowdplayerState.library[meta.artists[0] || meta.artist] == undefined) {
+                    window.CrowdplayerState.library[meta.artists[0] || meta.artist] = {}
+                }
+
+                if (window.CrowdplayerState.library[meta.artists[0] || meta.artist][meta.album] == null || window.CrowdplayerState.library[meta.artists[0] || meta.artist][meta.album] == undefined) {
+                    window.CrowdplayerState.library[meta.artists[0] || meta.artist][meta.album] = {}
+                    // Use timestamp to ensure each album gets a unique key
+                    const albumArtKey = `${meta.artist}-${meta.album}`;
+                    // console.log(`${meta.artist}-${meta.album}`, albumArtKey)
+                    // Use actual cover image if available, otherwise use default placeholder URL
+                    albumarts[albumArtKey] = meta._coverDataUri || DEFAULT_ALBUM_ART_URL;
+                    // console.log("AArt2 for ", meta.artist, "-", meta.album, "=", albumArtKey, meta._coverDataUri)
+                    // Store album art mapping with album reference for client
+                    // library[meta.artist][meta.album].duration_key = albumArtKey;
+                }
+                window.CrowdplayerState.library[meta.artists[0] || meta.artist][meta.album][meta.title] = {
+                    "album": meta.album,
+                    "artists": meta.artists,
+                    "artist": meta.artist,
+                    "date": meta.date,
+                    "year": meta.year,
+                    "album": meta.album,
+                    "path": path,
+                    "title": meta.title
+                }
             }
-            library[meta.artist][meta.album][meta.title] = {
-                "album": meta.album,
-                "artists": meta.artists,
-                "date": meta.date,
-                "year": meta.year,
-                "album": meta.album,
-                "path": path
+            catch (e) {
+                console.error(e)
             }
             document.querySelector("#parseprocess").value = i + 1;
             i++;
@@ -158,7 +290,7 @@ button_setup_Process.addEventListener("click", async () => {
         console.log(albumarts)
         // writeJsonToOpfs(`library-.json`, library)
         console.log("done")
-        window.library = library
+        // window.library = window.CrowdplayerState.library
         // window.meta = meta
         parsedSongs = true
         if (input_setup_Name.checkValidity()) {
@@ -202,11 +334,12 @@ button_setup_Continue.addEventListener("click", () => {
         }, 110)
     }
 })
-
-
+let runLoop = true
+// pickRandomPlaylist()
+window.CrowdplayerState.queue = []
 // Player
 window.conns = []
-function initPlayer() {
+async function initPlayer() {
     let id = search.get("id") || Math.random().toString(36).substring(2, 8).padEnd(6, '0')
     document.querySelector("main.setup").classList.add("hidden")
     document.querySelector("main.party").classList.remove("hidden")
@@ -247,23 +380,23 @@ function initPlayer() {
                     conn.send({ "msg": "ServerHello", "PartyName": partyName || "Untitled Party", "ApplicationName": "Crowdplayer2.0" })
                 }
                 if (data.msg == "Get-Library") {
-                    let totalMessages = Object.values(library).reduce((sum, albums) => sum + Object.keys(albums).length, 0);
+                    let totalMessages = Object.values(window.CrowdplayerState.library).reduce((sum, albums) => sum + Object.keys(albums).length, 0);
                     conn.send({ "msg": "Expect-Albums", "expect": totalMessages })
                     await delay(50)
                     let idx = 0;
-                    for (const artist of Object.keys(library)) {
-                        for (const album of Object.keys(library[artist])) {
+                    for (const artist of Object.keys(window.CrowdplayerState.library)) {
+                        for (const album of Object.keys(window.CrowdplayerState.library[artist])) {
 
                             console.log("Sending", artist, album);
 
                             conn.send({
                                 "msg": "Library-Album",
-                                "albumdata": library[artist][album],
+                                "albumdata": window.CrowdplayerState.library[artist][album],
                                 artist,
                                 album,
                                 idx,
                                 // Get the album art key from the stored duration_key
-                                image: albumarts[library[artist][album].duration_key]
+                                image: albumarts[`${artist}-${album}`]
                             });
                             idx++;
                             // This will now properly pause the loop if the buffer is full
@@ -277,7 +410,18 @@ function initPlayer() {
 
         });
     });
-
+    while (runLoop) {
+        let rlist = pickRandomPlaylist()
+        for (let song in rlist) {
+            await playSongByPath(rlist[song])
+            if(window.CrowdplayerState.queue.length > 0){console.log("Queue has items!")}
+            while(window.CrowdplayerState.queue.length > 0){
+                await playSongByPath(window.CrowdplayerState.queue[0])
+                console.log("Playing",window.CrowdplayerState.queue[0])
+                window.CrowdplayerState.queue.pop()
+            }
+        }
+    }
 }
 if (search.get("id")) {
     partyName = search.get("id") + " Testing Party"

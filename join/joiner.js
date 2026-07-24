@@ -132,7 +132,7 @@ let albumsToExpect = -1
 let albumArts = {}
 join_Continue_Button.addEventListener("click", () => {
     document.querySelector("#connect").classList.add("hidden")
-    document.querySelector("#library").classList.remove("hidden")
+    document.querySelector("#connecting").classList.remove("hidden")
     // document.querySelector("#partyName").innerText = partyInfo.PartyName
     conn.send({ "msg": "Get-Library" })
     library = {}
@@ -227,6 +227,8 @@ join_Continue_Button.addEventListener("click", () => {
 
                     })
                 })
+                document.querySelector("#connecting").classList.add("hidden")
+                document.querySelector("#library").classList.remove("hidden")
                 console.log(albumArts)
             }
         }
