@@ -102,8 +102,8 @@
     </div>
 
     <div class="library bg-base-200 hidden flex-1 min-h-0 w-full flex flex-col" id="library">
-        <div class="flex-1 min-h-0 flex flex-col p-2" id="library-content">
-            <div class="tabs tabs-box bg-base-100 w-full flex-1 min-h-0 outline-none">
+        <div class="flex-1 min-h-0 flex flex-col p-2" id="library-content gap-10">
+            <div class="tabs tabs-box bg-base-100 w-full flex-1 min-h-0 outline-none shrink h-full">
                 <input type="radio" name="music_categories" class="tab w-1/4 font-bold text-xl" aria-label="Queue" />
                 <div class="tab-content border-base-300 bg-base-200 overflow-auto p-6">
                     <ul class="list bg-base-100 flex-1 min-h-0 overflow-auto h-full" id="queue-list">
@@ -132,9 +132,15 @@
                     </ul>
                 </div>
             </div>
+            <div class="card bg-base-100 w-full shadow-sm">
+                <div class="card-body flex flex-row p-2">
+                    <img src="https://placehold.co/400x400?text= " alt="" class="size-10 rounded-box" id="currentArt">
+                    <div><span class="block font-bold" id="currentTrack">No State</span><span class="block i" id="currentArtist">No State</span></div>
+                </div>
+            </div>
         </div>
     </div>
-
+    <div class="toast toast-top toast-end" id="toasts"></div>
     <script type="module" src="./joiner.js"></script>
 </body>
 

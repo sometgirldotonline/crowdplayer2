@@ -58,7 +58,6 @@ join_Connect_Code.addEventListener("input", () => {
         if (window.conn) {
             conn.close()
         }
-        console.log("awaa")
         join_connectChecker_Spinner.classList.remove("hidden")
         join_Connect_Error.classList.add("hidden")
         join_connectChecker_Good.style.display = "none"
@@ -141,6 +140,21 @@ join_Continue_Button.addEventListener("click", () => {
         if (data.msg == "Expect-Albums") {
             albumsToExpect = data.expect
         }
+        if (data.msg == "PlaybackUpdate"){
+            document.querySelector("#currentArt").src = albumArts[data.artkey]
+            document.querySelector("#currentTrack").innerText = data.title
+            document.querySelector("#currentArtist").innerText = data.artist.join(", ")
+        }
+        if (data.msg == "AddToQueue") {
+            if (data.success) {
+                showToast(`<b>Added track to queue successfully</b>`)
+
+            }
+            else{
+                showToast(`<b>Failed adding track to queue</b>`)
+
+            }
+        }
         if (data.msg == "Library-Album") {
             if (!Object.hasOwn(library, data.artist)) {
                 library[data.artist] = {}
@@ -196,9 +210,9 @@ join_Continue_Button.addEventListener("click", () => {
                         metaDiv.appendChild(artistInfo)
                         li.appendChild(metaDiv)
                         document.querySelector("#album-list").appendChild(li)
-                        console.log(library[artist][album])
+                        // console.log(library[artist][album])
                         let tracks = Object.keys(library[artist][album]).sort((a, b) => { a.localeCompare(b) })
-                        console.log(tracks)
+                        // console.log(tracks)
                         tracks.forEach(track => {
                             if (track != "duration_key") {
                                 let trk = library[artist][album][track]
@@ -221,6 +235,12 @@ join_Continue_Button.addEventListener("click", () => {
                                 artistInfo.innerText = artist
                                 metaDiv.appendChild(artistInfo)
                                 li.appendChild(metaDiv)
+                                li.onclick = () => {
+                                    showToast(`<b>Adding <i>${htmlspecialchars(track)}</i> to the queue</b>`)
+                                    let tmp= trk
+                                    trk.msg = "AddToQueue"
+                                    conn.send(tmp)
+                                }
                                 document.querySelector("#track-list").appendChild(li)
                             }
                         })
@@ -229,7 +249,7 @@ join_Continue_Button.addEventListener("click", () => {
                 })
                 document.querySelector("#connecting").classList.add("hidden")
                 document.querySelector("#library").classList.remove("hidden")
-                console.log(albumArts)
+                // console.log(albumArts)
             }
         }
     })

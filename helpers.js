@@ -150,3 +150,30 @@ function sha256(string) {
     }
     return result;
 }
+function showToast(html,timeout=5000){
+        //     <div class="toast toast-bottom toast-end">
+        //     <div class="alert block text-center">
+        //         <span class="font-bold text-xl block">Join the Queue</span>
+        //         <span class="py-2 text-md block">
+        //             Go to <span class="font-semibold text-primary">crowdplayer.app/join</span> and enter code:
+        //         </span>
+        //         <code
+        //             class="bg-slate-200 px-3 py-1 text-2xl rounded-md border-slate-300 border-2 inline-block font-bold font-mono tracking-[0.2em] pr-2 mt-1 text-center"
+        //             id="code">______</code>
+        //     </div>
+        // </div>
+        let toast = document.querySelector("#toasts")
+        let alert = document.createElement("div")
+        alert.classList.add("alert")
+        alert.classList.add("block")
+        alert.classList.add("text-right")
+        alert.innerHTML = html
+        toast.appendChild(alert)
+        setTimeout(()=>{alert.remove()},timeout)
+}
+
+function htmlspecialchars(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
